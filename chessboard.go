@@ -6,11 +6,11 @@ import (
 )
 
 // ChessPiece as a chess piece
-type ChessPiece struct{ x, y int }
+type ChessPiece struct{ X, Y int }
 
 func (piece *ChessPiece) moveStep(direction StepDirection) {
-	piece.x += direction.x
-	piece.y += direction.y
+	piece.X += direction.X
+	piece.Y += direction.Y
 }
 
 // newChessPieces allocates and return a new []*ChessPiece,
@@ -63,11 +63,22 @@ func genChessBoardID() int {
 	return 1
 }
 
+func (game chessBoard) boardSnapshot() [][]PlayerType {
+	board := make([][]PlayerType, 4)
+	for x := 0; x <= HEIGHT; x++ {
+		board[x] = make([]PlayerType, 4)
+		for y := 0; y <= WEIGHT; y++ {
+			board[x][y] = game.board[x][y]
+		}
+	}
+	return board
+}
+
 func (game chessBoard) checkStepPosition(step Step) error {
-	nextX := step.chessPiece.x + step.direction.x
-	nextY := step.chessPiece.y + step.direction.y
+	nextX := step.ChessPiece.X + step.Direction.X
+	nextY := step.ChessPiece.Y + step.Direction.Y
 	// real piece
-	if step.player.Type != game.board[step.chessPiece.x][step.chessPiece.y] {
+	if step.player.Type != game.board[step.ChessPiece.X][step.ChessPiece.Y] {
 		return errStepInvalidPiece
 	}
 

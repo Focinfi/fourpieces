@@ -4,7 +4,7 @@ import "errors"
 
 // StepDirection for one step direction
 type StepDirection struct {
-	x, y int
+	X, Y int
 }
 
 var (
@@ -23,8 +23,9 @@ var (
 // Step for one step in the game
 type Step struct {
 	player     *Player
-	chessPiece *ChessPiece
-	direction  StepDirection
+	ChessPiece *ChessPiece
+	Direction  StepDirection
+	Board      [][]PlayerType
 }
 
 var errStepInvalidPiece = errors.New("step: unknown piece")

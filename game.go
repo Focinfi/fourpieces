@@ -89,17 +89,16 @@ func (game *chessBoard) nextStep(t PlayerType) error {
 	game.checkOver()
 
 	fmt.Printf("player1: %d, player2: %d\n", len(game.player1.pieces), len(game.player2.pieces))
-	fmt.Printf("%v\n", game)
 	// time.Sleep(time.Second)
 	return nil
 }
 
 func (game *chessBoard) applyStep(step *Step) error {
-	game.board[step.chessPiece.x][step.chessPiece.y] = 0
-	step.chessPiece.moveStep(step.direction)
-	game.board[step.chessPiece.x][step.chessPiece.y] = step.player.Type
+	game.board[step.ChessPiece.X][step.ChessPiece.Y] = 0
+	step.ChessPiece.moveStep(step.Direction)
+	game.board[step.ChessPiece.X][step.ChessPiece.Y] = step.player.Type
 
-	eatedPieces, err := game.eatedPiece(step.chessPiece, step.player)
+	eatedPieces, err := game.eatedPiece(step.ChessPiece, step.player)
 	if err != nil {
 		return err
 	}
@@ -114,10 +113,10 @@ func (game *chessBoard) applyStep(step *Step) error {
 func (game *chessBoard) removeRivalPieces(pieces []ChessPiece, player *Player) error {
 	rival := game.rivalOfPlayer(player)
 	for _, toRemove := range pieces {
-		fmt.Printf("eated Player[%d]: piece(%d, %d)\n", rival.Type, toRemove.x, toRemove.y)
+		fmt.Printf("eated Player[%d]: piece(%d, %d)\n", rival.Type, toRemove.X, toRemove.Y)
 		for i, piece := range rival.pieces {
-			if piece.x == toRemove.x && piece.y == toRemove.y {
-				game.board[toRemove.x][toRemove.y] = 0
+			if piece.X == toRemove.X && piece.Y == toRemove.Y {
+				game.board[toRemove.X][toRemove.Y] = 0
 				rival.pieces = append(rival.pieces[:i], rival.pieces[i+1:]...)
 				// fmt.Printf("pieces in player: %v\n", rival.pieces)
 			}
@@ -143,8 +142,8 @@ func (game *chessBoard) rivalOfPlayer(player *Player) (rival *Player) {
 }
 
 func (game *chessBoard) eatedPiece(piece *ChessPiece, player *Player) (eated []ChessPiece, err error) {
-	pieceX := piece.x
-	pieceY := piece.y
+	pieceX := piece.X
+	pieceY := piece.Y
 	board := game.board
 	playerType := player.Type
 	rivalType := game.rivalOfPlayer(player).Type
@@ -167,7 +166,7 @@ func (game *chessBoard) eatedPiece(piece *ChessPiece, player *Player) (eated []C
 		eatedXLineRivalIdx = 2
 	}
 	if eatedXLineRivalIdx != -1 {
-		eated = append(eated, ChessPiece{x: pieceX, y: eatedXLineRivalIdx})
+		eated = append(eated, ChessPiece{X: pieceX, Y: eatedXLineRivalIdx})
 	}
 
 	// y line
@@ -185,7 +184,7 @@ func (game *chessBoard) eatedPiece(piece *ChessPiece, player *Player) (eated []C
 		eatedYLineRivalIdx = 2
 	}
 	if eatedYLineRivalIdx != -1 {
-		eated = append(eated, ChessPiece{x: eatedYLineRivalIdx, y: pieceY})
+		eated = append(eated, ChessPiece{X: eatedYLineRivalIdx, Y: pieceY})
 	}
 
 	return

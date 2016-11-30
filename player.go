@@ -40,6 +40,7 @@ type Player struct {
 
 	game    *chessBoard
 	pieces  []*ChessPiece
+	steps   []*Step
 	turnNum int
 }
 
@@ -53,14 +54,17 @@ func newPlayer(t PlayerType, game *chessBoard) *Player {
 
 func (player *Player) nextStep() *Step {
 	stepOtps := player.availableSteps()
-	if len(stepOtps) > 0 {
-		rand.Seed(time.Now().Unix())
-		stepIdx := rand.Intn(len(stepOtps))
-		fmt.Printf("Player[% 2d], opt[%d], move piece[%d]\n", player.Type, len(stepOtps), stepOtps[stepIdx].chessPiece.x)
-		return stepOtps[stepIdx]
+	if len(stepOtps) <= 0 {
+		return nil
 	}
 
-	return nil
+	rand.Seed(time.Now().Unix())
+	stepIdx := rand.Intn(len(stepOtps))
+	fmt.Printf("Player[% 2d], opt[%d], move piece[%d]\n", player.Type, len(stepOtps), stepOtps[stepIdx].ChessPiece.X)
+	step := stepOtps[stepIdx]
+	step.Board = player.game.boardSnapshot()
+	fmt.Printf("%v\n%v => %v\n", step.Board, step.ChessPiece, step.Direction)
+	return step
 }
 
 func (player *Player) availableSteps() (steps []*Step) {
@@ -68,8 +72,8 @@ func (player *Player) availableSteps() (steps []*Step) {
 		for _, direction := range stepDirections {
 			step := Step{
 				player:     player,
-				chessPiece: piece,
-				direction:  direction,
+				ChessPiece: piece,
+				Direction:  direction,
 			}
 
 			// check position availability
