@@ -3,6 +3,8 @@ package fourpieces
 import (
 	"errors"
 	"fmt"
+
+	"log"
 )
 
 var errPlayerNotSync = errors.New("game: player(s) out of contorl")
@@ -195,6 +197,18 @@ func Play() {
 	game := newChessBoard()
 	for !game.isOver() {
 		game.nextTurn()
+	}
+	if game.err != nil {
+		log.Fatal("game: " + game.err.Error())
+
+	}
+
+	if err := game.saveToFS(game.player1); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := game.saveToFS(game.player2); err != nil {
+		log.Fatal(err)
 	}
 	fmt.Printf("winner: %v, turn: %d", game.winner, game.currentTurn)
 }

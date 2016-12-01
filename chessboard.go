@@ -1,8 +1,13 @@
 package fourpieces
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
+
+	"strconv"
+
+	"github.com/boltdb/bolt"
 )
 
 // ChessPiece as a chess piece
@@ -125,4 +130,50 @@ func newBoard() [][]PlayerType {
 		{PlayerA, 0, 0, PlayerB},
 		{PlayerA, 0, 0, PlayerB},
 	}
+}
+
+func (game chessBoard) saveToFS(player *Player) error {
+	db, err := bolt.Open(fmt.Sprintf("/Users/Frank/work/go/src/github.com/Focinfi/fourpieces/player%s.games.data", player.Type), 0600, nil)
+	if err != nil {
+		return fmt.Errorf("bolt: %s", err.Error())
+	}
+	defer db.Close()
+
+	db.Batch(func(tx *bolt.Tx) error {
+		for _, step := range player.steps {
+			b, err := json.Marshal(step)
+			if err != nil {
+				return fmt.Errorf("save game: %s", game.err.Error())
+			}
+			bucket, err := tx.CreateBucketIfNotExists([]byte("steps"))
+			if err != nil {
+				return fmt.Errorf("save game: %s", err.Error())
+			}
+
+			score := 0
+			scoreBytes := bucket.Get(b)
+			if scoreBytes != nil {
+				score, err = strconv.Atoi(string(scoreBytes))
+				if err != nil {
+					continue
+				}
+			}
+
+			if game.winner == step.player.Type {
+				score++
+			} else if game.winner == game.rivalOfPlayer(player).Type {
+				score--
+			}
+
+			err = bucket.Put(b, []byte(strconv.Itoa(score)))
+
+			if err != nil {
+				return fmt.Errorf("save game: %s", err.Error())
+			}
+
+		}
+		return nil
+	})
+
+	return nil
 }

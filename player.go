@@ -63,6 +63,7 @@ func (player *Player) nextStep() *Step {
 	fmt.Printf("Player[% 2d], opt[%d], move piece[%d]\n", player.Type, len(stepOtps), stepOtps[stepIdx].ChessPiece.X)
 	step := stepOtps[stepIdx]
 	step.Board = player.game.boardSnapshot()
+	player.steps = append(player.steps, step)
 	fmt.Printf("%v\n%v => %v\n", step.Board, step.ChessPiece, step.Direction)
 	return step
 }
