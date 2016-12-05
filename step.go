@@ -1,16 +1,12 @@
 package fourpieces
 
 import (
+	"encoding/json"
 	"errors"
-	"fmt"
-	"log"
+	"strconv"
 
 	"github.com/boltdb/bolt"
 )
-
-import "encoding/json"
-
-import "strconv"
 
 // StepDirection for one step direction
 type StepDirection struct {
@@ -60,12 +56,9 @@ func (step *Step) setScore() {
 		if steps != nil {
 			scoreBytes := steps.Get(step.toJSONBytes())
 			score, err := strconv.Atoi(string(scoreBytes))
-			if scoreBytes == nil {
-				fmt.Println(string(step.toJSONBytes()))
-			}
 
 			if scoreBytes != nil && err != nil {
-				log.Printf("step: score saved in database is not int, err: %v\n", err)
+				step.player.game.printf("step: score saved in database is not int, err: %v\n", err)
 			}
 			step.score = score
 		}
@@ -77,7 +70,7 @@ func (step *Step) setScore() {
 func (step Step) toJSONBytes() []byte {
 	b, err := json.Marshal(step)
 	if err != nil {
-		log.Fatalf("step: can not marshal into JSON, err: %v\n", err)
+		step.player.game.fatalf("step: can not marshal into JSON, err: %v\n", err)
 	}
 
 	return b

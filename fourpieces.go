@@ -3,12 +3,10 @@ package fourpieces
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
-
-	"strconv"
-
 	"os"
 	"path"
+	"strconv"
+	"strings"
 
 	"github.com/boltdb/bolt"
 )
@@ -50,6 +48,7 @@ type fourPieces struct {
 	over        bool
 	winner      PlayerType
 	err         error
+	*logger
 
 	playerA *Player
 	playerB *Player
@@ -58,7 +57,8 @@ type fourPieces struct {
 
 func newFourPieces() fourPieces {
 	game := &fourPieces{
-		id: genChessBoardID(),
+		id:     genChessBoardID(),
+		logger: defaultLogger,
 		board: [][]PlayerType{
 			{PlayerA, 0, 0, PlayerB},
 			{PlayerA, 0, 0, PlayerB},
@@ -162,7 +162,6 @@ func (game fourPieces) saveToFS(player *Player) error {
 }
 
 func moveOneStepOnBoard(board [][]PlayerType, step *Step) [][]PlayerType {
-	fmt.Println(board, step.basePiece, step.MoveTo)
 	board[step.basePiece.X][step.basePiece.Y] = 0
 	board[step.MoveTo.X][step.MoveTo.Y] = step.player.Type
 	return board

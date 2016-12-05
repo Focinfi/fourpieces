@@ -6,15 +6,15 @@ import (
 	"github.com/boltdb/bolt"
 )
 
+func TestPlay(t *testing.T) {
+	Play()
+}
+
 func Test(t *testing.T) {
 	game := newFourPieces()
 	println(game.String())
 	game.nextTurn()
 	t.Log(game)
-}
-
-func TestEatedPiece(t *testing.T) {
-
 }
 
 func TestIsRival(t *testing.T) {

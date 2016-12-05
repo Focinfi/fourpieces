@@ -1,7 +1,6 @@
 package fourpieces
 
 import (
-	"fmt"
 	"log"
 	"math"
 	"math/rand"
@@ -80,11 +79,13 @@ func (player *Player) nextStep() *Step {
 
 	rand.Seed(time.Now().UnixNano())
 	stepIdx := rand.Intn(len(stepOtps))
-	fmt.Printf("Player[% 2v], opt[%d], move piece %v\n", player.Type, len(stepOtps), stepOtps[stepIdx].MoveTo)
+	player.game.printf("Player[% 2v], opt[%d], move piece %v\n", player.Type, len(stepOtps), stepOtps[stepIdx].MoveTo)
 	step := stepOtps[stepIdx]
 	player.steps = append(player.steps, step)
-	// fmt.Printf("%v\n%v => %v\n", step.Board, step.ChessPiece, step.Direction)
-	// time.Sleep(time.Second)
+
+	if player.game.debug {
+		time.Sleep(time.Second)
+	}
 	return step
 }
 
@@ -95,7 +96,7 @@ func (player *Player) otpSteps() (steps []*Step) {
 	for _, step := range avlSteps {
 		n := step.checkNextStep()
 		step.score += n * 10
-		fmt.Printf("otpSteps: basePiece: %v, MoveTo: %v, score: %v\n", step.basePiece, step.MoveTo, step.score)
+		player.game.printf("otpSteps: basePiece: %v, MoveTo: %v, score: %v\n", step.basePiece, step.MoveTo, step.score)
 	}
 
 	// collect the steps with top score

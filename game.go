@@ -2,8 +2,6 @@ package fourpieces
 
 import (
 	"errors"
-	"fmt"
-
 	"log"
 )
 
@@ -100,14 +98,14 @@ func (game *fourPieces) nextStep(t PlayerType) error {
 
 	err := game.applyStep(step)
 	if err != nil {
-		fmt.Println(err)
+		game.println(err)
 		return err
 	}
 
 	game.checkOver()
 
-	fmt.Printf("player1: %d, player2: %d\n", len(game.playerA.pieces), len(game.playerB.pieces))
-	fmt.Println(game)
+	game.printf("player1: %d, player2: %d\n", len(game.playerA.pieces), len(game.playerB.pieces))
+	game.println(game)
 	// time.Sleep(time.Second)
 	return nil
 }
@@ -133,14 +131,14 @@ func (game *fourPieces) applyStep(step *Step) error {
 func (game *fourPieces) removeRivalPieces(pieces []ChessPiece, player *Player) error {
 	rival := game.rivalOfPlayer(player)
 	for _, toRemove := range pieces {
-		fmt.Printf("eated Player[%v]: piece(%d, %d)\n", rival.Type, toRemove.X, toRemove.Y)
+		game.printf("eated Player[%v]: piece(%d, %d)\n", rival.Type, toRemove.X, toRemove.Y)
 		for i, piece := range rival.pieces {
 			if piece.X == toRemove.X && piece.Y == toRemove.Y {
 				game.board[toRemove.X][toRemove.Y] = 0
 				rival.pieces = append(rival.pieces[:i], rival.pieces[i+1:]...)
-				// fmt.Printf("pieces in player: %v\n", rival.pieces)
+				// game.printf("pieces in player: %v\n", rival.pieces)
 				rival.steps[len(rival.steps)-1].score -= 10
-				fmt.Printf("reduce score: %#v\n", rival.steps[len(rival.steps)-1].MoveTo)
+				game.printf("reduce score: %#v\n", rival.steps[len(rival.steps)-1].MoveTo)
 			}
 		}
 	}
@@ -186,5 +184,5 @@ func Play() {
 	if err := game.saveToFS(game.playerB); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("winner: %v, turn: %d\n", game.winner, game.currentTurn)
+	game.printf("winner: %v, turn: %d\n", game.winner, game.currentTurn)
 }
