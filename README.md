@@ -1,6 +1,6 @@
 # Four Pieces Chess
 
-A Bot play chess with itself to improve the ability to win.
+A bot play chess with itself to improve the ability to win.
 
 ## Game Rule:
 
@@ -11,9 +11,7 @@ Board 4 x 4
 2-1 eat one piece
 
 ![](http://7xj8s4.com1.z0.glb.clouddn.com/four_pieces_w_1.jpg) 
-
 ![](http://7xj8s4.com1.z0.glb.clouddn.com/four_pieces_w_2.jpg) 
-
 ![](http://7xj8s4.com1.z0.glb.clouddn.com/four_pieces_w_3.jpg) 
 
 2-2 eat none
