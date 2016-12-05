@@ -7,7 +7,7 @@ import (
 )
 
 func Test(t *testing.T) {
-	game := newChessBoard()
+	game := newFourPieces()
 	println(game.String())
 	game.nextTurn()
 	t.Log(game)
@@ -38,7 +38,7 @@ func TestIsRival(t *testing.T) {
 }
 
 func TestPlayer(t *testing.T) {
-	game := newChessBoard()
+	game := newFourPieces()
 	player2 := game.rivalOfPlayer(game.playerA)
 	if player2 != game.playerB {
 		t.Error("can not get eh rival player")

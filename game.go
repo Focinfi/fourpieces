@@ -3,7 +3,6 @@ package fourpieces
 import (
 	"errors"
 	"fmt"
-	"time"
 
 	"log"
 )
@@ -11,46 +10,15 @@ import (
 var errPlayerNotSync = errors.New("game: player(s) out of contorl")
 var errUnknownPiece = errors.New("rule: nuknown piece")
 
-func (game chessBoard) isOver() bool {
+func (game fourPieces) isOver() bool {
 	return game.over
 }
 
-func (game *chessBoard) setOver() {
+func (game *fourPieces) setOver() {
 	game.over = true
 }
 
-func (game *chessBoard) nextTurn() {
-	// check state
-	if game.playerA.turnNum != game.currentTurn ||
-		game.playerB.turnNum != game.currentTurn {
-		game.err = errPlayerNotSync
-		game.setOver()
-	}
-
-	defer func() {
-		game.currentTurn++
-		game.playerA.turnNum++
-		game.playerB.turnNum++
-	}()
-
-	// PLAYER1 first
-	if err := game.nextStep(PlayerA); err != nil {
-		game.setOver()
-		return
-	}
-
-	if !game.isOver() {
-		// PLAYER2 second
-		if err := game.nextStep(PlayerB); err != nil {
-			game.setOver()
-			return
-		}
-	}
-
-	return
-}
-
-func (game *chessBoard) checkOver() {
+func (game *fourPieces) checkOver() {
 	aPiecesCnt := len(game.playerA.pieces)
 	bPiecesCnt := len(game.playerB.pieces)
 
@@ -82,7 +50,38 @@ func (game *chessBoard) checkOver() {
 	}
 }
 
-func (game *chessBoard) nextStep(t PlayerType) error {
+func (game *fourPieces) nextTurn() {
+	// check state
+	if game.playerA.turnNum != game.currentTurn ||
+		game.playerB.turnNum != game.currentTurn {
+		game.err = errPlayerNotSync
+		game.setOver()
+	}
+
+	defer func() {
+		game.currentTurn++
+		game.playerA.turnNum++
+		game.playerB.turnNum++
+	}()
+
+	// PLAYER1 first
+	if err := game.nextStep(PlayerA); err != nil {
+		game.setOver()
+		return
+	}
+
+	if !game.isOver() {
+		// PLAYER2 second
+		if err := game.nextStep(PlayerB); err != nil {
+			game.setOver()
+			return
+		}
+	}
+
+	return
+}
+
+func (game *fourPieces) nextStep(t PlayerType) error {
 	var step *Step
 	switch t {
 	case game.playerA.Type:
@@ -109,11 +108,11 @@ func (game *chessBoard) nextStep(t PlayerType) error {
 
 	fmt.Printf("player1: %d, player2: %d\n", len(game.playerA.pieces), len(game.playerB.pieces))
 	fmt.Println(game)
-	time.Sleep(time.Second)
+	// time.Sleep(time.Second)
 	return nil
 }
 
-func (game *chessBoard) applyStep(step *Step) error {
+func (game *fourPieces) applyStep(step *Step) error {
 	game.board[step.basePiece.X][step.basePiece.Y] = 0
 	game.board[step.MoveTo.X][step.MoveTo.Y] = step.player.Type
 	step.basePiece.X = step.MoveTo.X
@@ -131,7 +130,7 @@ func (game *chessBoard) applyStep(step *Step) error {
 	return nil
 }
 
-func (game *chessBoard) removeRivalPieces(pieces []ChessPiece, player *Player) error {
+func (game *fourPieces) removeRivalPieces(pieces []ChessPiece, player *Player) error {
 	rival := game.rivalOfPlayer(player)
 	for _, toRemove := range pieces {
 		fmt.Printf("eated Player[%v]: piece(%d, %d)\n", rival.Type, toRemove.X, toRemove.Y)
@@ -154,7 +153,7 @@ func (game *chessBoard) removeRivalPieces(pieces []ChessPiece, player *Player) e
 	return nil
 }
 
-func (game *chessBoard) rivalOfPlayer(player *Player) (rival *Player) {
+func (game *fourPieces) rivalOfPlayer(player *Player) (rival *Player) {
 	if player.Type == PlayerA {
 		rival = game.playerB
 	} else if player.Type == PlayerB {
@@ -164,69 +163,17 @@ func (game *chessBoard) rivalOfPlayer(player *Player) (rival *Player) {
 	return
 }
 
-func (game *chessBoard) eatedPiece(piece *ChessPiece, player *Player) (eated []ChessPiece, err error) {
-	rivalType := game.rivalOfPlayer(player).Type
-	return eatPieces(piece.X, piece.Y, player.Type, rivalType, game.board)
-}
-
-func eatPieces(pieceX, pieceY int, playerType, rivalType PlayerType, board [][]PlayerType) (eated []ChessPiece, err error) {
-	if board[pieceX][pieceY] == 0 {
-		err = errUnknownPiece
-		return
-	}
-	// x line
-	eatedXLineRivalIdx := -1
-	xLine := board[pieceX]
-	if xLine[0] == 0 && xLine[1] == rivalType && xLine[2] == playerType && xLine[3] == playerType {
-		eatedXLineRivalIdx = 1
-	} else if xLine[0] == 0 && xLine[1] == playerType && xLine[2] == playerType && xLine[3] == rivalType {
-		eatedXLineRivalIdx = 3
-	} else if xLine[0] == rivalType && xLine[1] == playerType && xLine[2] == playerType && xLine[3] == 0 {
-		eatedXLineRivalIdx = 0
-	} else if xLine[0] == playerType && xLine[1] == playerType && xLine[2] == rivalType && xLine[3] == 0 {
-		eatedXLineRivalIdx = 2
-	}
-	if eatedXLineRivalIdx != -1 {
-		eated = append(eated, ChessPiece{X: pieceX, Y: eatedXLineRivalIdx})
-	}
-
-	// y line
-	eatedYLineRivalIdx := -1
-	yLine := func(i int) PlayerType {
-		return board[i][pieceY]
-	}
-	if yLine(0) == 0 && yLine(1) == rivalType && yLine(2) == playerType && yLine(3) == playerType {
-		eatedYLineRivalIdx = 1
-	} else if yLine(0) == 0 && yLine(1) == playerType && yLine(2) == playerType && yLine(3) == rivalType {
-		eatedYLineRivalIdx = 3
-	} else if yLine(0) == rivalType && yLine(1) == playerType && yLine(2) == playerType && yLine(3) == 0 {
-		eatedYLineRivalIdx = 0
-	} else if yLine(0) == playerType && yLine(1) == playerType && yLine(2) == rivalType && yLine(3) == 0 {
-		eatedYLineRivalIdx = 2
-	}
-	if eatedYLineRivalIdx != -1 {
-		eated = append(eated, ChessPiece{X: eatedYLineRivalIdx, Y: pieceY})
-	}
-
-	return
+func (game *fourPieces) eatedPiece(piece *ChessPiece, player *Player) (eated []ChessPiece, err error) {
+	return eatPieces(piece.X, piece.Y, player.Type, game.board)
 }
 
 // Play play for testing
 func Play() {
-	game := newChessBoard()
+	game := newFourPieces()
 	for !game.isOver() {
 		game.nextTurn()
-		// for _, piece := range game.playerA.pieces {
-
-		// 	fmt.Printf("(%d, %d)\n", piece.X, piece.Y)
-		// }
-
-		// cmd := ""
-		// for cmd != "y" {
-		// 	fmt.Printf("\nNext turn?(y)")
-		// 	fmt.Scanln(&cmd)
-		// }
 	}
+
 	if game.err != nil {
 		log.Fatal("game: " + game.err.Error())
 

@@ -51,14 +51,14 @@ func rivalOfPlayerType(t PlayerType) PlayerType {
 type Player struct {
 	Type PlayerType
 
-	game    *chessBoard
+	game    *fourPieces
 	pieces  []*ChessPiece
 	steps   []*Step
 	exDB    *bolt.DB
 	turnNum int
 }
 
-func newPlayer(t PlayerType, game *chessBoard) *Player {
+func newPlayer(t PlayerType, game *fourPieces) *Player {
 	db, err := bolt.Open(dataPath(t), 0600, nil)
 	if err != nil {
 		log.Fatalf("newPlayer: can not load experirence db, err: %v", err)
@@ -88,21 +88,6 @@ func (player *Player) nextStep() *Step {
 	return step
 }
 
-func (player *Player) availibleSteps() (steps []*Step) {
-	for _, piece := range player.pieces {
-		for _, direction := range stepDirections {
-			step := newStep(player, piece, direction)
-			// check position availability
-			if err := player.game.checkStepPosition(*step); err == nil {
-				step.Board = moveOneStepOnBoard(step.Board, step)
-				step.setScore()
-				steps = append(steps, step)
-			}
-		}
-	}
-	return
-}
-
 func (player *Player) otpSteps() (steps []*Step) {
 	avlSteps := player.availibleSteps()
 
@@ -128,5 +113,20 @@ func (player *Player) otpSteps() (steps []*Step) {
 		}
 	}
 
+	return
+}
+
+func (player *Player) availibleSteps() (steps []*Step) {
+	for _, piece := range player.pieces {
+		for _, direction := range stepDirections {
+			step := newStep(player, piece, direction)
+			// check position availability
+			if err := player.game.checkStepPosition(*step); err == nil {
+				step.Board = moveOneStepOnBoard(step.Board, step)
+				step.setScore()
+				steps = append(steps, step)
+			}
+		}
+	}
 	return
 }

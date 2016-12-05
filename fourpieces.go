@@ -15,6 +15,10 @@ import (
 
 var appDir = path.Join(os.Getenv("GOPATH"), "src", "github.com", "Focinfi", "fourpieces")
 
+func dataPath(t PlayerType) string {
+	return path.Join(appDir, fmt.Sprintf("player%s.games.data", t))
+}
+
 // ChessPiece as a chess piece
 type ChessPiece struct{ X, Y int }
 
@@ -40,21 +44,20 @@ func newChessPieces(player PlayerType) (pieces []*ChessPiece) {
 	return
 }
 
-type chessBoard struct {
+type fourPieces struct {
 	id          int
 	currentTurn int
 	over        bool
+	winner      PlayerType
 	err         error
 
 	playerA *Player
 	playerB *Player
 	board   [][]PlayerType
-
-	winner PlayerType
 }
 
-func newChessBoard() chessBoard {
-	game := &chessBoard{
+func newFourPieces() fourPieces {
+	game := &fourPieces{
 		id: genChessBoardID(),
 		board: [][]PlayerType{
 			{PlayerA, 0, 0, PlayerB},
@@ -73,7 +76,7 @@ func genChessBoardID() int {
 	return 1
 }
 
-func (game chessBoard) boardSnapshot() [][]PlayerType {
+func (game fourPieces) boardSnapshot() [][]PlayerType {
 	board := make([][]PlayerType, 4)
 	for x := 0; x <= HEIGHT; x++ {
 		board[x] = make([]PlayerType, 4)
@@ -84,7 +87,7 @@ func (game chessBoard) boardSnapshot() [][]PlayerType {
 	return board
 }
 
-func (game chessBoard) checkStepPosition(step Step) error {
+func (game fourPieces) checkStepPosition(step Step) error {
 	// real piece
 	if step.player.Type != game.board[step.basePiece.X][step.basePiece.Y] {
 		return errStepInvalidPiece
@@ -102,8 +105,8 @@ func (game chessBoard) checkStepPosition(step Step) error {
 	return nil
 }
 
-func (game chessBoard) String() string {
-	lines := []string{fmt.Sprintf("> T%d\n", game.currentTurn)}
+func (game fourPieces) String() string {
+	lines := []string{fmt.Sprintf("> T-%d\n", game.currentTurn)}
 	for _, xLine := range game.board {
 		lines = append(lines, fmt.Sprintf("% 2v\n", xLine))
 	}
@@ -113,29 +116,7 @@ func (game chessBoard) String() string {
 	return strings.Join(lines, "")
 }
 
-type board [][]PlayerType
-
-func (b board) piece(x, y int) PlayerType {
-	if y > len(b) {
-		return -1
-	}
-
-	// yLine := b[x]
-	// if x > len(yLine)
-
-	return 0
-}
-
-func newBoard() [][]PlayerType {
-	return [][]PlayerType{
-		{PlayerA, 0, 0, PlayerB},
-		{PlayerA, 0, 0, PlayerB},
-		{PlayerA, 0, 0, PlayerB},
-		{PlayerA, 0, 0, PlayerB},
-	}
-}
-
-func (game chessBoard) saveToFS(player *Player) error {
+func (game fourPieces) saveToFS(player *Player) error {
 	db := player.exDB
 	defer db.Close()
 
@@ -178,10 +159,6 @@ func (game chessBoard) saveToFS(player *Player) error {
 	})
 
 	return nil
-}
-
-func dataPath(t PlayerType) string {
-	return path.Join(appDir, fmt.Sprintf("player%s.games.data", t))
 }
 
 func moveOneStepOnBoard(board [][]PlayerType, step *Step) [][]PlayerType {

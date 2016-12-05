@@ -91,7 +91,6 @@ func (step Step) checkNextStep() int {
 	eated, _ := eatPieces(step.MoveTo.X,
 		step.MoveTo.Y,
 		step.player.Type,
-		step.player.game.rivalOfPlayer(step.player).Type,
 		board)
 	return len(eated)
 }
