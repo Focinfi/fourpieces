@@ -7,8 +7,13 @@ import (
 
 	"strconv"
 
+	"os"
+	"path"
+
 	"github.com/boltdb/bolt"
 )
+
+var appDir = path.Join(os.Getenv("GOPATH"), "src", "github.com", "Focinfi", "fourpieces")
 
 // ChessPiece as a chess piece
 type ChessPiece struct{ X, Y int }
@@ -41,8 +46,8 @@ type chessBoard struct {
 	over        bool
 	err         error
 
-	player1 *Player
-	player2 *Player
+	playerA *Player
+	playerB *Player
 	board   [][]PlayerType
 
 	winner PlayerType
@@ -59,8 +64,8 @@ func newChessBoard() chessBoard {
 		},
 	}
 
-	game.player1 = newPlayer(PlayerA, game)
-	game.player2 = newPlayer(PlayerB, game)
+	game.playerA = newPlayer(PlayerA, game)
+	game.playerB = newPlayer(PlayerB, game)
 	return *game
 }
 
@@ -80,19 +85,17 @@ func (game chessBoard) boardSnapshot() [][]PlayerType {
 }
 
 func (game chessBoard) checkStepPosition(step Step) error {
-	nextX := step.ChessPiece.X + step.Direction.X
-	nextY := step.ChessPiece.Y + step.Direction.Y
 	// real piece
-	if step.player.Type != game.board[step.ChessPiece.X][step.ChessPiece.Y] {
+	if step.player.Type != game.board[step.basePiece.X][step.basePiece.Y] {
 		return errStepInvalidPiece
 	}
 
-	if !inRange(nextX, nextY) {
+	if !inRange(step.MoveTo.X, step.MoveTo.Y) {
 		return errStepOutOfRange
 	}
 
 	// if free
-	if game.board[nextX][nextY] != 0 {
+	if game.board[step.MoveTo.X][step.MoveTo.Y] != 0 {
 		return errStepNoFree
 	}
 
@@ -133,10 +136,7 @@ func newBoard() [][]PlayerType {
 }
 
 func (game chessBoard) saveToFS(player *Player) error {
-	db, err := bolt.Open(fmt.Sprintf("/Users/Frank/work/go/src/github.com/Focinfi/fourpieces/player%s.games.data", player.Type), 0600, nil)
-	if err != nil {
-		return fmt.Errorf("bolt: %s", err.Error())
-	}
+	db := player.exDB
 	defer db.Close()
 
 	db.Batch(func(tx *bolt.Tx) error {
@@ -160,12 +160,14 @@ func (game chessBoard) saveToFS(player *Player) error {
 			}
 
 			if game.winner == step.player.Type {
-				score++
+				score += 2
 			} else if game.winner == game.rivalOfPlayer(player).Type {
 				score--
+			} else {
+				score++
 			}
 
-			err = bucket.Put(b, []byte(strconv.Itoa(score)))
+			err = bucket.Put(b, []byte(strconv.Itoa(score+step.score)))
 
 			if err != nil {
 				return fmt.Errorf("save game: %s", err.Error())
@@ -176,4 +178,15 @@ func (game chessBoard) saveToFS(player *Player) error {
 	})
 
 	return nil
+}
+
+func dataPath(t PlayerType) string {
+	return path.Join(appDir, fmt.Sprintf("player%s.games.data", t))
+}
+
+func moveOneStepOnBoard(board [][]PlayerType, step *Step) [][]PlayerType {
+	fmt.Println(board, step.basePiece, step.MoveTo)
+	board[step.basePiece.X][step.basePiece.Y] = 0
+	board[step.MoveTo.X][step.MoveTo.Y] = step.player.Type
+	return board
 }

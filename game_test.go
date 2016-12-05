@@ -2,6 +2,8 @@ package fourpieces
 
 import (
 	"testing"
+
+	"github.com/boltdb/bolt"
 )
 
 func Test(t *testing.T) {
@@ -37,14 +39,33 @@ func TestIsRival(t *testing.T) {
 
 func TestPlayer(t *testing.T) {
 	game := newChessBoard()
-	player2 := game.rivalOfPlayer(game.player1)
-	if player2 != game.player2 {
+	player2 := game.rivalOfPlayer(game.playerA)
+	if player2 != game.playerB {
 		t.Error("can not get eh rival player")
 	}
 
 	player2.pieces = nil
 
-	if game.player2.pieces != nil {
+	if game.playerB.pieces != nil {
 		t.Error("can not change the pieces")
 	}
+}
+
+func TestSaveToFS(t *testing.T) {
+	db, err := bolt.Open(dataPath(PlayerB), 0600, nil)
+	if err != nil {
+		t.Error(err)
+	}
+	defer db.Close()
+
+	db.View(func(tx *bolt.Tx) error {
+		steps := tx.Bucket([]byte("steps"))
+		if steps == nil {
+			t.Error("empty database")
+		}
+
+		score := steps.Get([]byte(`{"MoveTo":{"X":2,"Y":2},"Board":[[1,0,0,-1],[1,0,0,0],[1,0,-1,0],[0,1,0,-1]]}`))
+		t.Log(string(score))
+		return nil
+	})
 }
