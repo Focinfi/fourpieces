@@ -79,13 +79,10 @@ func (player *Player) nextStep() *Step {
 
 	rand.Seed(time.Now().UnixNano())
 	stepIdx := rand.Intn(len(stepOtps))
-	player.game.printf("Player[% 2v], opt[%d], move piece %v\n", player.Type, len(stepOtps), stepOtps[stepIdx].MoveTo)
+	player.game.printf("%v: %v => %v\n", player.Type, stepOtps[stepIdx].basePiece, stepOtps[stepIdx].MoveTo)
 	step := stepOtps[stepIdx]
 	player.steps = append(player.steps, step)
 
-	if player.game.debug {
-		time.Sleep(time.Second)
-	}
 	return step
 }
 
@@ -96,7 +93,7 @@ func (player *Player) otpSteps() (steps []*Step) {
 	for _, step := range avlSteps {
 		n := step.checkNextStep()
 		step.score += n * 10
-		player.game.printf("otpSteps: basePiece: %v, MoveTo: %v, score: %v\n", step.basePiece, step.MoveTo, step.score)
+		player.game.printf("otpSteps: %v => %v score: %v\n", step.basePiece, step.MoveTo, step.score)
 	}
 
 	// collect the steps with top score

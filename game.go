@@ -3,6 +3,7 @@ package fourpieces
 import (
 	"errors"
 	"log"
+	"time"
 )
 
 var errPlayerNotSync = errors.New("game: player(s) out of contorl")
@@ -104,9 +105,10 @@ func (game *fourPieces) nextStep(t PlayerType) error {
 
 	game.checkOver()
 
-	game.printf("player1: %d, player2: %d\n", len(game.playerA.pieces), len(game.playerB.pieces))
 	game.println(game)
-	// time.Sleep(time.Second)
+	if game.debug {
+		time.Sleep(time.Second)
+	}
 	return nil
 }
 
@@ -131,14 +133,14 @@ func (game *fourPieces) applyStep(step *Step) error {
 func (game *fourPieces) removeRivalPieces(pieces []ChessPiece, player *Player) error {
 	rival := game.rivalOfPlayer(player)
 	for _, toRemove := range pieces {
-		game.printf("eated Player[%v]: piece(%d, %d)\n", rival.Type, toRemove.X, toRemove.Y)
+		game.printf("eated %v(%d, %d)\n", rival.Type, toRemove.X, toRemove.Y)
 		for i, piece := range rival.pieces {
 			if piece.X == toRemove.X && piece.Y == toRemove.Y {
 				game.board[toRemove.X][toRemove.Y] = 0
 				rival.pieces = append(rival.pieces[:i], rival.pieces[i+1:]...)
 				// game.printf("pieces in player: %v\n", rival.pieces)
 				rival.steps[len(rival.steps)-1].score -= 10
-				game.printf("reduce score: %#v\n", rival.steps[len(rival.steps)-1].MoveTo)
+				game.printf("lower score: %v\n", rival.steps[len(rival.steps)-1].MoveTo)
 			}
 		}
 	}

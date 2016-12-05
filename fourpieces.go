@@ -25,6 +25,10 @@ func (piece *ChessPiece) moveStep(direction StepDirection) {
 	piece.Y += direction.Y
 }
 
+func (piece ChessPiece) String() string {
+	return fmt.Sprintf("(%d, %d)", piece.X, piece.Y)
+}
+
 // newChessPieces allocates and return a new []*ChessPiece,
 // which contains four pieces.
 // if player is 1, pieces are (0, 0), (1, 0), (2, 0), (3, 0),
@@ -106,12 +110,10 @@ func (game fourPieces) checkStepPosition(step Step) error {
 }
 
 func (game fourPieces) String() string {
-	lines := []string{fmt.Sprintf("> T-%d\n", game.currentTurn)}
+	lines := []string{fmt.Sprintf(">>>>>> T-%d <<<<<<\n", game.currentTurn)}
 	for _, xLine := range game.board {
-		lines = append(lines, fmt.Sprintf("% 2v\n", xLine))
+		lines = append(lines, fmt.Sprintf("               % 2v\n", xLine))
 	}
-
-	lines = append(lines, "\n")
 
 	return strings.Join(lines, "")
 }
